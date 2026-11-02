@@ -26,6 +26,7 @@ export default function App() {
     setIsLoading(true);
     setTrace([]);
     setElapsedMs(null);
+    const history = messages.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, { role: "user", content: text }]);
 
     let assistantText = "";
@@ -48,7 +49,7 @@ export default function App() {
         if (type === "error") {
           setError(String(event.detail ?? "Erreur agent"));
         }
-      });
+      }, history);
 
       if (assistantText.trim()) {
         setMessages((prev) => [...prev, { role: "assistant", content: assistantText.trim() }]);

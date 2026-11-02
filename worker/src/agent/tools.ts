@@ -14,6 +14,22 @@ const DELIVERY: Record<string, { label: string; frais_xof: number }> = {
   inter_villes: { label: "Inter-villes", frais_xof: 4500 },
 };
 
+function resolveProductId(catalog: CatalogItem[], raw: string): string | null {
+  const key = raw.trim().toLowerCase();
+  if (!key) return null;
+  const exact = catalog.find((p) => p.id.toLowerCase() === key);
+  if (exact) return exact.id;
+  for (const p of catalog) {
+    const hay = `${p.id} ${p.nom} ${p.mots_cles.join(" ")}`.toLowerCase();
+    if (hay.includes(key) || key.includes(p.id)) return p.id;
+  }
+  if (key.includes("wax") && key.includes("bleu")) {
+    const waxBleu = catalog.find((p) => p.id === "pagne-wax-bleu");
+    if (waxBleu) return waxBleu.id;
+  }
+  return null;
+}
+
 function resolveZone(zone: string): string | null {
   const key = zone.toLowerCase();
   if (DELIVERY[key]) return key;
@@ -23,10 +39,13 @@ function resolveZone(zone: string): string | null {
   return null;
 }
 
+export type ToolContext = { clientPhone?: string };
+
 export async function executeTool(
   env: Env,
   name: string,
   args: Record<string, unknown>,
+  ctx: ToolContext = {},
 ): Promise<string> {
   const kv = env.BOUTIQUE_KV;
 
@@ -40,12 +59,19 @@ export async function executeTool(
   }
 
   if (name === "verifier_stock") {
-    const productId = String(args.product_id ?? "");
-    const qty = Number(args.quantite ?? 1);
     const catalog = await loadCatalog(kv);
+    const rawId = String(args.product_id ?? "");
+    const productId = resolveProductId(catalog, rawId) ?? rawId;
+    const qty = Number(args.quantite ?? 1);
     const stock = await loadStock(kv);
     const product = catalog.find((p) => p.id === productId);
-    if (!product) return JSON.stringify({ error: "Produit inconnu" });
+    if (!product) {
+      return JSON.stringify({
+        error: "Produit inconnu",
+        product_id_saisi: rawId,
+        ids_disponibles: catalog.map((p) => p.id),
+      });
+    }
     const row = stock.find((s) => s.product_id === productId);
     const availableQty = row?.quantite ?? 0;
     const available = availableQty >= qty;
@@ -102,11 +128,24 @@ export async function executeTool(
     const catalog = await loadCatalog(kv);
     const map = new Map(catalog.map((p) => [p.id, p]));
     const lines = (args.lignes as Array<{ product_id: string; quantite: number }>) ?? [];
+    if (!lines.length) {
+      return JSON.stringify({ error: "Aucune ligne de commande. Fournir lignes avec product_id et quantite." });
+    }
+    const phone =
+      String(ctx.clientPhone ?? args.client_phone ?? "")
+        .replace("@c.us", "")
+        .replace(/\D/g, "") || "unknown";
     let totalArticles = 0;
     const normalized = [];
     for (const line of lines) {
-      const p = map.get(line.product_id);
-      if (!p) return JSON.stringify({ error: `Produit inconnu ${line.product_id}` });
+      const resolvedId = resolveProductId(catalog, String(line.product_id ?? "")) ?? line.product_id;
+      const p = map.get(resolvedId);
+      if (!p) {
+        return JSON.stringify({
+          error: `Produit inconnu ${line.product_id}`,
+          ids_disponibles: catalog.map((x) => x.id),
+        });
+      }
       const sub = p.prix_xof * line.quantite;
       totalArticles += sub;
       normalized.push({
@@ -122,7 +161,7 @@ export async function executeTool(
     const orderId = `CMD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
     const order = {
       id: orderId,
-      client_phone: String(args.client_phone ?? "unknown"),
+      client_phone: phone,
       lignes: normalized,
       livraison_xof: livraison,
       total_xof: total,
@@ -133,7 +172,15 @@ export async function executeTool(
     const orders = await loadOrders(kv);
     orders.push(order);
     await saveOrders(kv, orders);
-    return JSON.stringify({ id: orderId, statut: order.statut, total_xof: total });
+    return JSON.stringify({
+      id: orderId,
+      statut: order.statut,
+      total_xof: total,
+      message:
+        order.statut === "pending_manager"
+          ? "Commande enregistrée, en attente de validation par la gérante."
+          : "Commande enregistrée, en attente de confirmation client.",
+    });
   }
 
   return JSON.stringify({ error: `Outil inconnu ${name}` });

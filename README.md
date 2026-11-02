@@ -10,7 +10,7 @@ Module 8 - Agent IA boutique (pagnes et accessoires, marché Dantokpa).
 | Trace (>= 3 étapes) | [`docs/trace-demo-reelle.json`](docs/trace-demo-reelle.json) (10 étapes, 4 outils) |
 | Tableau comparatif | [`docs/comparaison-agents.md`](docs/comparaison-agents.md) |
 | URL Worker (palier 3) | https://boutique-dantokpa.bernardalade92.workers.dev |
-| Captures WhatsApp | [`docs/captures/client-commande.jpg`](docs/captures/client-commande.jpg), [`docs/captures/gerante-validation.jpg`](docs/captures/gerante-validation.jpg) |
+| Captures WhatsApp | [`docs/captures/client-commande.png`](docs/captures/client-commande.png), [`docs/captures/gerante-validation.png`](docs/captures/gerante-validation.png) |
 
 ### Extrait de trace (palier 1)
 
@@ -85,8 +85,9 @@ uv run python ../scripts/demo_trace.py
 
 | Fichier | Description |
 |---------|-------------|
-| [client-commande.jpg](docs/captures/client-commande.jpg) | Conversation client / vendeur IA |
-| [gerante-validation.jpg](docs/captures/gerante-validation.jpg) | Validation gérante OUI/NON |
+| [client-commande.png](docs/captures/client-commande.png) | Client : wax bleu, Akpakpa, total 18 500 XOF |
+| [gerante-validation.png](docs/captures/gerante-validation.png) | CMD-D4F0B071 confirmée par la gérante |
+| [validation-gerante-ui.png](docs/captures/validation-gerante-ui.png) | (Bonus) UI React validation gérante |
 
 ### Déploiement
 
@@ -116,3 +117,11 @@ Green API : webhook entrant vers `/webhook`. Gérante : `OUI CMD-XXXXXXXX` ou `N
 | `MANAGER_PHONE` | Numéro gérante (E.164) |
 
 Ne jamais committer `.env` ni `.dev.vars`.
+
+## Module 8 - Checklist
+
+- [x] README
+- [x] Trace >= 3 étapes (`docs/trace-demo-reelle.json`)
+- [x] Tableau comparatif (`docs/comparaison-agents.md`)
+- [x] URL Worker prod
+- [x] Captures WhatsApp réelles (`docs/captures/`)

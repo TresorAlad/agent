@@ -1,13 +1,14 @@
 import asyncio
 import json
 
+import httpx
 from flask import Flask, Response, jsonify, request, stream_with_context
 from flask_cors import CORS
 
 from agent.data_store import load_orders, save_orders, load_stock, save_stock
 from agent.multi.orchestrator import run_team_agent
 from agent.runner import stream_agent_reply
-from config import DEFAULT_MODEL, get_rodiumai_api_key
+from config import DEFAULT_MODEL, WORKER_URL, get_rodiumai_api_key
 
 app = Flask(__name__)
 CORS(app)
@@ -93,12 +94,36 @@ def chat():
     )
 
 
+def _fetch_worker_orders(status: str | None) -> list[dict]:
+    try:
+        params = {"status": status} if status else None
+        with httpx.Client(timeout=10.0) as client:
+            response = client.get(f"{WORKER_URL}/orders", params=params)
+            if response.status_code != 200:
+                return []
+            data = response.json()
+            rows = data.get("orders") or []
+            for row in rows:
+                row["_source"] = "whatsapp"
+            return rows
+    except httpx.HTTPError:
+        return []
+
+
 @app.get("/orders")
 def list_orders():
     status = request.args.get("status")
     orders = load_orders()
     if status:
         orders = [o for o in orders if o.get("statut") == status]
+    for row in orders:
+        row["_source"] = "local"
+
+    worker_orders = _fetch_worker_orders(status)
+    seen = {o.get("id") for o in orders}
+    for row in worker_orders:
+        if row.get("id") not in seen:
+            orders.append(row)
     return jsonify({"orders": orders})
 
 
@@ -131,11 +156,23 @@ def approve_order(order_id: str):
             _apply_stock_for_order(order, decrement=True)
         break
 
-    if not updated:
-        return jsonify({"error": "Commande introuvable."}), 404
+    if updated:
+        save_orders(orders)
+        return jsonify({"order": updated})
 
-    save_orders(orders)
-    return jsonify({"order": updated})
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            response = client.post(
+                f"{WORKER_URL}/orders/{order_id}/approve",
+                json={"approved": approved},
+            )
+            if response.status_code == 200:
+                return jsonify(response.json())
+            if response.status_code == 404:
+                return jsonify({"error": "Commande introuvable."}), 404
+            return jsonify({"error": response.text[:300]}), response.status_code
+    except httpx.HTTPError as exc:
+        return jsonify({"error": f"Worker indisponible: {exc}"}), 502
 
 
 if __name__ == "__main__":

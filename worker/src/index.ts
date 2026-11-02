@@ -3,6 +3,7 @@ import { isDuplicate } from "./dedup";
 import type { Env } from "./env";
 import { sendWhatsAppMessage } from "./green-api";
 import { parseManagerDecision, sanitizeUserInput } from "./sanitize";
+import { appendSessionTurn, loadSession } from "./session";
 import { loadOrders, updateOrderStatus } from "./storage";
 
 type GreenWebhookBody = {
@@ -62,8 +63,10 @@ async function processMessage(env: Env, body: GreenWebhookBody): Promise<void> {
     return;
   }
 
-  const reply = await runAgent(env, text, sender.replace("@c.us", ""));
+  const history = await loadSession(env.BOUTIQUE_KV, chatId);
+  const reply = await runAgent(env, text, sender.replace("@c.us", ""), history);
   await sendWhatsAppMessage(env, chatId, reply);
+  await appendSessionTurn(env.BOUTIQUE_KV, chatId, text, reply);
 
   const orders = await loadOrders(env.BOUTIQUE_KV);
   const pending = orders.filter(
@@ -74,12 +77,57 @@ async function processMessage(env: Env, body: GreenWebhookBody): Promise<void> {
   }
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     if (url.pathname === "/health") {
-      return Response.json({ status: "ok", service: "boutique-worker" });
+      return Response.json({ status: "ok", service: "boutique-worker" }, { headers: corsHeaders });
+    }
+
+    if (url.pathname === "/orders" && request.method === "GET") {
+      const status = url.searchParams.get("status");
+      let orders = await loadOrders(env.BOUTIQUE_KV);
+      if (status) orders = orders.filter((o) => o.statut === status);
+      return Response.json({ orders, source: "worker" }, { headers: corsHeaders });
+    }
+
+    const approveMatch = url.pathname.match(/^\/orders\/([^/]+)\/approve$/);
+    if (approveMatch && request.method === "POST") {
+      const orderId = approveMatch[1];
+      let approved = true;
+      try {
+        const body = (await request.json()) as { approved?: boolean };
+        approved = body.approved ?? true;
+      } catch {
+        /* empty body ok */
+      }
+      const statut = approved ? "confirmed" : "rejected";
+      const updated = await updateOrderStatus(env.BOUTIQUE_KV, orderId, statut);
+      if (!updated) {
+        return Response.json({ error: "Commande introuvable." }, { status: 404, headers: corsHeaders });
+      }
+      const clientChat = `${String(updated.client_phone).replace(/\D/g, "")}@c.us`;
+      const clientMsg =
+        statut === "confirmed"
+          ? `Bonne nouvelle ! Votre commande ${updated.id} est confirmée par la gérante. Merci !`
+          : `Votre commande ${updated.id} n'a pas pu être validée. Contactez-nous au marché Dantokpa.`;
+      try {
+        await sendWhatsAppMessage(env, clientChat, clientMsg);
+      } catch (err) {
+        console.error("notify client after approve", err);
+      }
+      return Response.json({ order: updated, source: "worker" }, { headers: corsHeaders });
     }
 
     if (url.pathname === "/webhook" && request.method === "POST") {
@@ -102,6 +150,9 @@ export default {
       return new Response("ok");
     }
 
-    return new Response("Boutique Dantokpa Worker - endpoints: /health, /webhook", { status: 404 });
+    return new Response(
+      "Boutique Dantokpa Worker - endpoints: /health, /webhook, /orders",
+      { status: 404, headers: corsHeaders },
+    );
   },
 };

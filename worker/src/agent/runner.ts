@@ -1,9 +1,14 @@
 import type { Env } from "../env";
+import type { SessionMessage } from "../session";
 import { executeTool, TOOL_DEFINITIONS } from "./tools";
 
 const SYSTEM_PROMPT = `Tu es le vendeur WhatsApp de la boutique Tissus Dantokpa.
-Ne jamais inventer prix, stock ou total. Utilise les outils.
-Format WhatsApp court. Commande seulement avec accord client et validation gérante.`;
+Ne jamais inventer prix, stock ou total. Utilise les outils si tu as besoin de chiffres à jour.
+Format WhatsApp court. Commande seulement avec accord client explicite et validation gérante.
+Tu as accès à l'historique de la conversation : reste cohérent (produit, quantité, zone, total déjà annoncés).
+Les prix sont fixes : pas de réduction discrétionnaire.
+Le numéro WhatsApp du client est déjà connu : ne demande pas le téléphone.
+Pour creer_commande utilise le product_id exact des outils (ex: pagne-wax-bleu), client_confirmed=true après "ok je confirme".`;
 
 type ChatMessage = Record<string, unknown>;
 
@@ -28,14 +33,19 @@ async function chatCompletion(env: Env, messages: ChatMessage[]): Promise<any> {
   return response.json();
 }
 
-export async function runAgent(env: Env, userMessage: string, clientPhone: string): Promise<string> {
-  const messages: ChatMessage[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    {
-      role: "user",
-      content: `Client ${clientPhone} dit: ${userMessage}`,
-    },
-  ];
+export async function runAgent(
+  env: Env,
+  userMessage: string,
+  clientPhone: string,
+  priorHistory: SessionMessage[] = [],
+): Promise<string> {
+  const messages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }];
+
+  for (const turn of priorHistory) {
+    messages.push({ role: turn.role, content: turn.content });
+  }
+
+  messages.push({ role: "user", content: userMessage });
 
   for (let i = 0; i < 6; i++) {
     const data = await chatCompletion(env, messages);
@@ -65,7 +75,7 @@ export async function runAgent(env: Env, userMessage: string, clientPhone: strin
       if (name === "creer_commande" && !args.client_phone) {
         args.client_phone = clientPhone;
       }
-      const result = await executeTool(env, name, args);
+      const result = await executeTool(env, name, args, { clientPhone: clientPhone });
       messages.push({
         role: "tool",
         tool_call_id: call.id,

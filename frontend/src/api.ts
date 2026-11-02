@@ -16,19 +16,28 @@ export type Order = {
   statut: string;
   total_xof: number;
   livraison_xof: number;
-  lignes: Array<{ nom: string; quantite: number; sous_total_xof: number }>;
+  lignes: Array<{
+    nom?: string;
+    product_id?: string;
+    quantite: number;
+    sous_total_xof?: number;
+  }>;
+  _source?: string;
   created_at?: string;
 };
+
+export type ChatHistoryItem = { role: "user" | "assistant"; content: string };
 
 export async function streamChat(
   message: string,
   mode: AgentMode,
   onEvent: (payload: Record<string, unknown>) => void,
+  history: ChatHistoryItem[] = [],
 ): Promise<void> {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, mode }),
+    body: JSON.stringify({ message, mode, history }),
   });
 
   if (!response.ok) {

@@ -13,6 +13,10 @@ PROMPTS_DIR = BASE_DIR / "agent" / "prompts"
 
 MAX_TOOL_ROUNDS = 6
 DEFAULT_MODEL = os.getenv("RODIUMAI_MODEL", "openai/gpt-4o-mini")
+WORKER_URL = os.getenv(
+    "WORKER_URL",
+    "https://boutique-dantokpa.bernardalade92.workers.dev",
+).rstrip("/")
 
 
 def get_rodiumai_api_key() -> str:

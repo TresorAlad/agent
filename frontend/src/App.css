@@ -251,3 +251,12 @@
 .error {
   color: #b71c1c;
 }
+
+.success-banner {
+  background: #e8f5e9;
+  color: #1b5e20;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}

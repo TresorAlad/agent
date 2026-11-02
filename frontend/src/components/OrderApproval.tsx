@@ -5,6 +5,7 @@ export function OrderApproval() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -26,8 +27,15 @@ export function OrderApproval() {
   }, [reload]);
 
   async function handleDecision(orderId: string, approved: boolean) {
+    setError(null);
+    setSuccess(null);
     try {
       await approveOrder(orderId, approved);
+      setSuccess(
+        approved
+          ? `Commande ${orderId} approuvée. Le client WhatsApp sera notifié.`
+          : `Commande ${orderId} refusée.`,
+      );
       await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur");
@@ -37,8 +45,11 @@ export function OrderApproval() {
   return (
     <section className="orders-panel">
       <h2>Validation gérante</h2>
-      <p className="subtitle">Commandes en attente (pending_manager)</p>
+      <p className="subtitle">
+        Commandes en attente (local + WhatsApp Worker)
+      </p>
       {loading && <p>Chargement...</p>}
+      {success && <p className="success-banner">{success}</p>}
       {error && <p className="error">{error}</p>}
       {!loading && orders.length === 0 && (
         <p className="hint">Aucune commande en attente.</p>
@@ -50,10 +61,13 @@ export function OrderApproval() {
               <strong>{order.id}</strong>
               <span>{order.client_phone}</span>
             </div>
+            {"_source" in order && (
+              <p className="hint">Source : {(order as Order & { _source?: string })._source}</p>
+            )}
             <ul>
-              {order.lignes.map((l, i) => (
+              {(order.lignes ?? []).map((l, i) => (
                 <li key={i}>
-                  {l.quantite} x {l.nom} - {l.sous_total_xof} XOF
+                  {l.quantite} x {l.nom ?? l.product_id} - {l.sous_total_xof ?? "?"} XOF
                 </li>
               ))}
             </ul>
