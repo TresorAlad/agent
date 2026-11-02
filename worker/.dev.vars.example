@@ -1,0 +1,6 @@
+RODIUMAI_API_KEY=rd_sk_YOUR_KEY
+RODIUMAI_MODEL=openai/gpt-4o-mini
+GREEN_API_URL=https://XXXX.api.greenapi.com
+GREEN_API_ID=your_id_instance
+GREEN_API_TOKEN=your_api_token_instance
+MANAGER_PHONE=229XXXXXXXX

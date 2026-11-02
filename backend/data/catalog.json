@@ -1,0 +1,58 @@
+[
+  {
+    "id": "pagne-wax-bleu",
+    "nom": "Pagne wax bleu royal",
+    "description": "Wax 6 yards, motifs géométriques bleu et blanc",
+    "prix_xof": 8500,
+    "categorie": "pagne",
+    "mots_cles": ["wax", "bleu", "pagne", "6 yards", "royal"]
+  },
+  {
+    "id": "pagne-wax-rouge",
+    "nom": "Pagne wax rouge bordeaux",
+    "description": "Wax premium, tons rouge et or",
+    "prix_xof": 9200,
+    "categorie": "pagne",
+    "mots_cles": ["wax", "rouge", "bordeaux", "pagne", "or"]
+  },
+  {
+    "id": "pagne-bogolan",
+    "nom": "Pagne bogolan traditionnel",
+    "description": "Motifs artisanaux, coton naturel",
+    "prix_xof": 12000,
+    "categorie": "pagne",
+    "mots_cles": ["bogolan", "traditionnel", "pagne", "artisanal"]
+  },
+  {
+    "id": "pagne-ankara",
+    "nom": "Pagne ankara fleurs",
+    "description": "Ankara coloré, fleurs tropicales",
+    "prix_xof": 7800,
+    "categorie": "pagne",
+    "mots_cles": ["ankara", "fleurs", "pagne", "coloré"]
+  },
+  {
+    "id": "accessoire-sac-raphia",
+    "nom": "Sac en raphia Dantokpa",
+    "description": "Sac à main tressé main, bandoulière",
+    "prix_xof": 4500,
+    "categorie": "accessoire",
+    "mots_cles": ["sac", "raphia", "accessoire", "bandoulière"]
+  },
+  {
+    "id": "accessoire-bijoux-perles",
+    "nom": "Collier perles multicolores",
+    "description": "Perles verre, fermoir laiton",
+    "prix_xof": 3200,
+    "categorie": "accessoire",
+    "mots_cles": ["collier", "perles", "bijoux", "accessoire"]
+  },
+  {
+    "id": "accessoire-foulard",
+    "nom": "Foulard wax assorti",
+    "description": "Foulard léger, assorti aux pagnes wax",
+    "prix_xof": 2500,
+    "categorie": "accessoire",
+    "mots_cles": ["foulard", "wax", "accessoire"]
+  }
+]

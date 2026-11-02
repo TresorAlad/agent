@@ -1,0 +1,98 @@
+[
+  {
+    "step": 1,
+    "kind": "start",
+    "tool": null,
+    "args_summary": null,
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:20.146389+00:00",
+    "meta": {
+      "mode": "single"
+    }
+  },
+  {
+    "step": 2,
+    "kind": "tool_call",
+    "tool": "chercher_produit",
+    "args_summary": "{\"query\": \"pagne wax bleu\"}",
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:21.974305+00:00",
+    "meta": {}
+  },
+  {
+    "step": 3,
+    "kind": "tool_result",
+    "tool": "chercher_produit",
+    "args_summary": null,
+    "result_summary": "{\"query\": \"pagne wax bleu\", \"count\": 5, \"produits\": [{\"id\": \"pagne-wax-bleu\", \"nom\": \"Pagne wax bleu royal\", \"description\": \"Wax 6 yards, motifs géométriques bleu et blanc\", \"prix_xof\": 8500, \"cate...",
+    "ts": "2026-11-02T18:41:21.974725+00:00",
+    "meta": {}
+  },
+  {
+    "step": 4,
+    "kind": "tool_call",
+    "tool": "verifier_stock",
+    "args_summary": "{\"product_id\": \"pagne-wax-bleu\", \"quantite\": 2}",
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:23.949409+00:00",
+    "meta": {}
+  },
+  {
+    "step": 5,
+    "kind": "tool_result",
+    "tool": "verifier_stock",
+    "args_summary": null,
+    "result_summary": "{\"product_id\": \"pagne-wax-bleu\", \"nom\": \"Pagne wax bleu royal\", \"quantite_demandee\": 2, \"stock_disponible\": 12, \"available\": true, \"alternatives\": []}",
+    "ts": "2026-11-02T18:41:23.950001+00:00",
+    "meta": {}
+  },
+  {
+    "step": 6,
+    "kind": "tool_call",
+    "tool": "calculer_livraison",
+    "args_summary": "{\"zone\": \"Akpakpa\", \"poids_kg\": 1}",
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:23.950334+00:00",
+    "meta": {}
+  },
+  {
+    "step": 7,
+    "kind": "tool_result",
+    "tool": "calculer_livraison",
+    "args_summary": null,
+    "result_summary": "{\"zone\": \"cotonou_intra\", \"zone_label\": \"Cotonou intra-muros (Akpakpa, Cadjehoun, Ganhi...)\", \"poids_kg\": 1.0, \"frais_livraison_xof\": 1500, \"delai_estime\": \"24-48h\"}",
+    "ts": "2026-11-02T18:41:23.950405+00:00",
+    "meta": {}
+  },
+  {
+    "step": 8,
+    "kind": "tool_call",
+    "tool": "convertir_devise",
+    "args_summary": "{\"montant_xof\": 18500}",
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:26.301446+00:00",
+    "meta": {}
+  },
+  {
+    "step": 9,
+    "kind": "tool_result",
+    "tool": "convertir_devise",
+    "args_summary": null,
+    "result_summary": "{\"montant_xof\": 18500.0, \"devise_cible\": \"EUR\", \"montant_converti\": 28.2, \"taux\": 0.00152449, \"source\": \"parité XOF/EUR (655.957)\"}",
+    "ts": "2026-11-02T18:41:26.301542+00:00",
+    "meta": {}
+  },
+  {
+    "step": 10,
+    "kind": "complete",
+    "tool": null,
+    "args_summary": null,
+    "result_summary": null,
+    "ts": "2026-11-02T18:41:28.559088+00:00",
+    "meta": {
+      "elapsed_ms": 8412
+    }
+  }
+]
+
+Nombre d'appels outils: 4
