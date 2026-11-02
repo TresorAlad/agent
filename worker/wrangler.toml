@@ -4,8 +4,8 @@ compatibility_date = "2024-12-01"
 
 [[kv_namespaces]]
 binding = "BOUTIQUE_KV"
-id = "00000000000000000000000000000000"
-preview_id = "00000000000000000000000000000000"
+id = "049f8a79a59e4e2cb6b2cff920798e0d"
+preview_id = "ee4fcbe3f5964465b29b3eff425d6e4b"
 
 [vars]
 RODIUMAI_MODEL = "openai/gpt-4o-mini"

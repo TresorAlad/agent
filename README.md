@@ -9,7 +9,7 @@ Module 8 - Agent IA boutique (pagnes et accessoires, marché Dantokpa).
 | README | Ce fichier |
 | Trace (>= 3 étapes) | [`docs/trace-demo-reelle.json`](docs/trace-demo-reelle.json) (10 étapes, 4 outils) |
 | Tableau comparatif | [`docs/comparaison-agents.md`](docs/comparaison-agents.md) |
-| URL Worker (palier 3) | Nom Worker : `boutique-dantokpa` - URL affichée par `wrangler deploy` (voir [Palier 3](#palier-3---worker-cloudflare--whatsapp)) |
+| URL Worker (palier 3) | https://boutique-dantokpa.bernardalade92.workers.dev |
 | Captures WhatsApp | [`docs/captures/client-commande.jpg`](docs/captures/client-commande.jpg), [`docs/captures/gerante-validation.jpg`](docs/captures/gerante-validation.jpg) |
 
 ### Extrait de trace (palier 1)
@@ -77,19 +77,9 @@ uv run python ../scripts/demo_trace.py
 
 ## Palier 3 - Worker Cloudflare + WhatsApp
 
-**Nom Worker** : `boutique-dantokpa` ([`worker/wrangler.toml`](worker/wrangler.toml))
-
-Après `npm run deploy` dans `worker/` :
-
-- **URL Worker** : `https://boutique-dantokpa.<votre-compte>.workers.dev`
-- **Health** : `GET /health`
-- **Webhook Green API** : `POST .../webhook`
-
-Exemple (à remplacer par l'URL affichée par Wrangler) :
-
-```text
-https://boutique-dantokpa.<votre-compte>.workers.dev
-```
+**URL Worker** : https://boutique-dantokpa.bernardalade92.workers.dev  
+**Health** : https://boutique-dantokpa.bernardalade92.workers.dev/health  
+**Webhook Green API (incoming)** : `https://boutique-dantokpa.bernardalade92.workers.dev/webhook`
 
 ### Captures WhatsApp
 
